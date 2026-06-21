@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Where New York City moves: residential turnover by neighborhood</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+  :root{
+    --ink:#1a1a1a; --muted:#666; --line:#e2ddd4; --paper:#f7f4ee; --card:#fff;
+    --accent:#b8472f; --navy:#1f2d4d;
+    --c0:#f1eef6; --c1:#d4b9da; --c2:#c994c7; --c3:#df65b0; --c4:#dd1c77; --c5:#980043;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;color:var(--ink);background:var(--paper)}
+  #wrap{display:flex;height:100vh;overflow:hidden}
+  #map{flex:1;height:100%;background:#dfe4e8}
+  #panel{width:380px;max-width:42vw;height:100%;overflow-y:auto;background:var(--card);border-left:1px solid var(--line);padding:22px 22px 60px}
+  h1{font-size:21px;line-height:1.2;margin:0 0 4px;letter-spacing:-.01em}
+  .eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:.13em;color:var(--accent);font-weight:700;margin-bottom:10px}
+  .lede{font-size:13.5px;color:var(--muted);line-height:1.5;margin:0 0 16px}
+  .seg{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 6px}
+  .seg button{flex:1 1 auto;min-width:0;font-size:12px;padding:8px 6px;border:1px solid var(--line);background:#fff;border-radius:7px;cursor:pointer;color:var(--ink);font-weight:600;white-space:nowrap}
+  .seg button.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+  .metric-note{font-size:11.5px;color:var(--muted);line-height:1.45;margin:8px 0 16px;min-height:30px}
+  .legend{display:flex;align-items:center;gap:0;margin:0 0 4px;font-size:11px;color:var(--muted)}
+  .legend .sw{height:12px;flex:1}
+  .legend-row{display:flex;justify-content:space-between;font-size:10.5px;color:var(--muted);margin-bottom:18px}
+  .citystat{background:var(--paper);border:1px solid var(--line);border-radius:9px;padding:12px 14px;margin:0 0 18px}
+  .citystat .big{font-family:Georgia,"Times New Roman",serif;font-size:26px;font-weight:600;line-height:1}
+  .citystat .lbl{font-size:11.5px;color:var(--muted);margin-top:3px}
+  h2{font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink);margin:18px 0 8px;border-bottom:1px solid var(--line);padding-bottom:5px}
+  ol.rank{list-style:none;margin:0 0 8px;padding:0;counter-reset:r}
+  ol.rank li{counter-increment:r;display:grid;grid-template-columns:18px 1fr auto;gap:8px;align-items:baseline;padding:5px 4px;font-size:12.5px;cursor:pointer;border-radius:5px}
+  ol.rank li:hover{background:var(--paper)}
+  ol.rank li::before{content:counter(r);color:var(--muted);font-size:11px;text-align:right}
+  ol.rank li .nm{line-height:1.25}
+  ol.rank li .nm small{display:block;color:var(--muted);font-size:10.5px}
+  ol.rank li .v{font-family:Georgia,serif;font-weight:600}
+  #sel{background:var(--navy);color:#fff;border-radius:9px;padding:14px 16px;margin:0 0 14px;display:none}
+  #sel .nm{font-size:15px;font-weight:700;margin-bottom:2px}
+  #sel .sub{font-size:11.5px;opacity:.8;margin-bottom:10px}
+  #sel .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  #sel .cell .n{font-family:Georgia,serif;font-size:19px;font-weight:600}
+  #sel .cell .l{font-size:10.5px;opacity:.85;line-height:1.2}
+  #sel .moe{font-size:10.5px;opacity:.7;margin-top:9px}
+  .foot{font-size:11px;color:var(--muted);line-height:1.5;margin-top:18px}
+  .foot a{color:var(--accent);cursor:pointer}
+  .btnrow{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+  .btnrow button{font-size:11px;padding:7px 11px;border-radius:7px;border:1px solid var(--line);background:#fff;cursor:pointer;font-weight:600;color:var(--ink)}
+  #aiBtn{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:1000;padding:20px}
+  .modal.on{display:flex}
+  .modal .box{background:#fff;max-width:560px;max-height:84vh;overflow-y:auto;border-radius:12px;padding:26px 28px}
+  .modal.ai .box{background:var(--navy);color:#eef1f7}
+  .modal h3{margin:0 0 12px;font-size:17px}
+  .modal p,.modal li{font-size:13px;line-height:1.6;color:inherit}
+  .modal.ai a{color:#9cc0ff}
+  .modal .x{float:right;cursor:pointer;font-size:20px;line-height:1;color:var(--muted);border:none;background:none}
+  .modal.ai .x{color:#aab4cc}
+  .leaflet-tooltip.tt{background:#1a1a1a;color:#fff;border:none;border-radius:6px;font-size:12px;padding:7px 10px;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+  .leaflet-tooltip.tt b{font-size:13px}
+  @media(max-width:780px){
+    #wrap{flex-direction:column}
+    #map{height:54vh;flex:none}
+    #panel{width:100%;max-width:100%;height:46vh;border-left:none;border-top:1px solid var(--line)}
+  }
+</style>
+</head>
+<body>
+<div id="wrap">
+  <div id="map"></div>
+  <aside id="panel">
+    <div class="eyebrow">New York City &middot; residential turnover</div>
+    <h1>Where the city stays put, and where it churns</h1>
+    <p class="lede">The share of households in each neighborhood that moved into their current home recently &mdash; a measure of residential turnover. Pick a measure; darker means more turnover.</p>
+
+    <div class="seg" id="seg">
+      <button data-m="turnover_all" class="on">All households</button>
+      <button data-m="turnover_rent">Renters</button>
+      <button data-m="turnover_own">Owners</button>
+      <button data-m="churn_annual">Past year</button>
+    </div>
+    <div class="metric-note" id="mnote"></div>
+
+    <div class="legend"><span id="lmin">low</span><div class="sw" style="background:var(--c0)"></div><div class="sw" style="background:var(--c1)"></div><div class="sw" style="background:var(--c2)"></div><div class="sw" style="background:var(--c3)"></div><div class="sw" style="background:var(--c4)"></div><div class="sw" style="background:var(--c5)"></div><span id="lmax">high</span></div>
+    <div class="legend-row"><span id="b0"></span><span id="b5"></span></div>
+
+    <div class="citystat"><div class="big" id="cityBig">&mdash;</div><div class="lbl" id="cityLbl"></div></div>
+
+    <div id="sel">
+      <div class="nm" id="selNm"></div>
+      <div class="sub" id="selSub"></div>
+      <div class="grid">
+        <div class="cell"><div class="n" id="selAll"></div><div class="l">all households</div></div>
+        <div class="cell"><div class="n" id="selRent"></div><div class="l">renters</div></div>
+        <div class="cell"><div class="n" id="selOwn"></div><div class="l">owners</div></div>
+        <div class="cell"><div class="n" id="selChurn"></div><div class="l">moved in past year</div></div>
+      </div>
+      <div class="moe" id="selMoe"></div>
+    </div>
+
+    <h2 id="topHd">Most turnover</h2>
+    <ol class="rank" id="topList"></ol>
+    <h2 id="botHd">Least turnover</h2>
+    <ol class="rank" id="botList"></ol>
+
+    <div class="btnrow">
+      <button id="aiBtn">&#9888; AI caution</button>
+      <button id="methBtn">Methodology &amp; sources</button>
+    </div>
+    <p class="foot">Source: U.S. Census Bureau, American Community Survey 2020&ndash;2024 5-year estimates (tables B25038 and B07003), aggregated from census tracts to New York City Department of City Planning 2020 Neighborhood Tabulation Areas. Estimates carry margins of error; see methodology.</p>
+  </aside>
+</div>
+
+<div class="modal" id="methModal"><div class="box">
+  <button class="x" data-close>&times;</button>
+  <h3>Methodology &amp; sources</h3>
+  <p><b>What this measures.</b> Residential turnover is the share of occupied homes whose householder moved in recently. The main view ("All households," "Renters," "Owners") uses Census table <b>B25038, Tenure by Year Householder Moved Into Unit</b>, and counts the share who moved in during 2020 or later &mdash; roughly the most recent five years. The "Past year" view uses table <b>B07003</b> and counts the share of residents who lived in a different home one year earlier (annual churn).</p>
+  <p><b>Geography.</b> Figures are pulled at the census-tract level for the five New York City counties, then summed to the city's 2020 Neighborhood Tabulation Areas (NTAs) using the Department of City Planning tract-to-NTA equivalency. Only residential NTAs are shown; parks, airports, cemeteries and other non-residential areas are excluded. Boundaries are City Planning's shoreline-clipped polygons, so shading stops at the coastline.</p>
+  <p><b>Margins of error.</b> American Community Survey figures are estimates from a sample, not a full count. Each neighborhood rate carries a margin of error (shown when you select a neighborhood), computed by combining the published tract margins in quadrature. Smaller neighborhoods and the owner-only and past-year measures have wider margins; treat small differences in the rankings as roughly equal.</p>
+  <p><b>What turnover does and does not mean.</b> A high rate reflects frequent moves, which can come from new housing construction, a young renter population, or displacement. A low rate reflects long-tenured households, often owner-occupied. This map does not distinguish among those causes.</p>
+  <p>Built with Leaflet and CARTO basemaps. Data generated <span id="genDate"></span>.</p>
+</div></div>
+
+<div class="modal ai" id="aiModal"><div class="box">
+  <button class="x" data-close>&times;</button>
+  <h3>&#9888; A note of caution</h3>
+  <p>This tool was built with the help of AI. The underlying numbers come directly from the U.S. Census Bureau, but please keep the following in mind:</p>
+  <ul>
+    <li>Every figure is a <b>survey estimate with a margin of error</b>, not an exact count. Small gaps between neighborhoods may not be meaningful.</li>
+    <li>"Turnover" is defined here as <b>recent move-ins</b>. It does not separate new construction, normal rental churn, and displacement &mdash; very different stories can produce the same number.</li>
+    <li>Census tracts were aggregated to neighborhoods; a neighborhood's value is the combined estimate of its tracts.</li>
+    <li>Numbers were checked against the published citywide totals and the most- and least-turnover lists were reviewed for plausibility, but <b>independent verification against the Census source is encouraged</b> before citing specific figures.</li>
+  </ul>
+  <p>Source data: <a href="https://data.census.gov" target="_blank" rel="noopener">data.census.gov</a>, ACS 2020&ndash;2024 5-year estimates.</p>
+</div></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const COLORS=['#f1eef6','#d4b9da','#c994c7','#df65b0','#dd1c77','#980043'];
+const METRICS={
+  turnover_all:{label:'All households',top:'Most turnover',bot:'Least turnover',
+    note:'Share of <b>all occupied homes</b> whose householder moved in during 2020 or later (about the last five years).',moe:'moe_all'},
+  turnover_rent:{label:'Renters',top:'Most renter turnover',bot:'Least renter turnover',
+    note:'Share of <b>renter-occupied</b> homes whose householder moved in during 2020 or later. Renters turn over far faster than owners.',moe:'moe_rent'},
+  turnover_own:{label:'Owners',top:'Most owner turnover',bot:'Least owner turnover',
+    note:'Share of <b>owner-occupied</b> homes whose householder moved in during 2020 or later. Wider margins of error in small or rental-heavy areas.',moe:'moe_own'},
+  churn_annual:{label:'Past year',top:'Most annual churn',bot:'Least annual churn',
+    note:'Share of residents who lived in a <b>different home one year earlier</b> &mdash; a measure of year-to-year churn.',moe:'moe_churn'}
+};
+let MET='turnover_all', geo, layer, breaks=[], meta;
+const map=L.map('map',{minZoom:10,maxZoom:16,scrollWheelZoom:true}).setView([40.715,-73.96],11);
+L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png',{attribution:'&copy; OpenStreetMap &copy; CARTO',subdomains:'abcd'}).addTo(map);
+const labels=L.tileLayer('https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png',{subdomains:'abcd',pane:'shadowPane'}).addTo(map);
+
+function quantiles(vals,n){
+  const s=vals.filter(v=>v!=null).sort((a,b)=>a-b),out=[];
+  for(let i=1;i<n;i++) out.push(s[Math.floor(i/n*s.length)]);
+  return out;
+}
+function colorFor(v){
+  if(v==null) return '#ddd';
+  for(let i=0;i<breaks.length;i++) if(v<breaks[i]) return COLORS[i];
+  return COLORS[COLORS.length-1];
+}
+function style(f){return {fillColor:colorFor(f.properties[MET]),weight:.6,color:'#fff',fillOpacity:.82};}
+
+function recompute(){
+  const vals=geo.features.map(f=>f.properties[MET]).filter(v=>v!=null);
+  breaks=quantiles(vals,6);
+  const mn=Math.min(...vals),mx=Math.max(...vals);
+  document.getElementById('lmin').textContent=mn.toFixed(0)+'%';
+  document.getElementById('lmax').textContent=mx.toFixed(0)+'%';
+  document.getElementById('b0').textContent='fewer recent movers';
+  document.getElementById('b5').textContent='more recent movers';
+  if(layer) layer.setStyle(style);
+  const m=METRICS[MET];
+  document.getElementById('mnote').innerHTML=m.note;
+  document.getElementById('topHd').textContent=m.top;
+  document.getElementById('botHd').textContent=m.bot;
+  // city stat
+  const ck={turnover_all:'turnover_all',turnover_rent:'turnover_rent',turnover_own:'turnover_own',churn_annual:null}[MET];
+  if(ck&&meta){document.getElementById('cityBig').textContent=meta.city[ck]+'%';
+    document.getElementById('cityLbl').textContent='citywide '+m.label.toLowerCase()+' turnover (moved in 2020 or later)';}
+  else{document.getElementById('cityBig').textContent='—';
+    document.getElementById('cityLbl').textContent='Citywide rate shown for the five-year measures';}
+  buildLists();
+}
+function buildLists(){
+  const fs=geo.features.filter(f=>f.properties[MET]!=null).map(f=>f.properties);
+  const top=[...fs].sort((a,b)=>b[MET]-a[MET]).slice(0,12);
+  const bot=[...fs].sort((a,b)=>a[MET]-b[MET]).slice(0,12);
+  const row=p=>`<li data-nta="${p.nta}"><span class="nm">${p.name}<small>${p.boro}</small></span><span class="v">${p[MET].toFixed(1)}%</span></li>`;
+  document.getElementById('topList').innerHTML=top.map(row).join('');
+  document.getElementById('botList').innerHTML=bot.map(row).join('');
+  document.querySelectorAll('ol.rank li').forEach(li=>li.onclick=()=>flyTo(li.dataset.nta));
+}
+function flyTo(nta){
+  const f=geo.features.find(x=>x.properties.nta===nta);
+  if(!f) return;
+  const l=L.geoJSON(f); map.fitBounds(l.getBounds(),{maxZoom:14,padding:[40,40]});
+  showSel(f.properties);
+}
+function showSel(p){
+  document.getElementById('sel').style.display='block';
+  document.getElementById('selNm').textContent=p.name;
+  document.getElementById('selSub').textContent=p.boro+' · '+p.households.toLocaleString()+' households · '+p.owner_share+'% owner-occupied';
+  const fmt=v=>v==null?'—':v.toFixed(1)+'%';
+  document.getElementById('selAll').textContent=fmt(p.turnover_all);
+  document.getElementById('selRent').textContent=fmt(p.turnover_rent);
+  document.getElementById('selOwn').textContent=fmt(p.turnover_own);
+  document.getElementById('selChurn').textContent=fmt(p.churn_annual);
+  const m=METRICS[MET],mo=p[m.moe];
+  document.getElementById('selMoe').textContent=mo!=null?('Selected measure ('+m.label+'): ±'+mo+' pct. pts. margin of error'):'';
+}
+function onEach(f,l){
+  l.on('mouseover',()=>{l.setStyle({weight:2,color:'#333'});l.bringToFront();
+    const p=f.properties;
+    l.bindTooltip(`<b>${p.name}</b><br>${METRICS[MET].label}: ${p[MET]==null?'n/a':p[MET].toFixed(1)+'%'}`,{className:'tt',sticky:true}).openTooltip();});
+  l.on('mouseout',()=>l.setStyle(style(f)));
+  l.on('click',()=>showSel(f.properties));
+}
+
+Promise.all([
+  fetch('data.geojson').then(r=>r.json()),
+  fetch('meta.json').then(r=>r.json())
+]).then(([g,m])=>{
+  geo=g; meta=m;
+  if(m.generated_for) document.getElementById('genDate').textContent='from '+m.vintage;
+  layer=L.geoJSON(geo,{style,onEachFeature:onEach}).addTo(map);
+  labels.bringToFront();
+  recompute();
+  fitWhenReady();
+});
+function fitWhenReady(tries){
+  tries=tries||0;
+  map.invalidateSize();
+  if(map.getSize().x>50){
+    map.fitBounds(layer.getBounds(),{padding:[8,8]});
+  } else if(tries<40){
+    setTimeout(()=>fitWhenReady(tries+1),100);
+  }
+}
+window.addEventListener('resize',()=>map.invalidateSize());
+
+document.querySelectorAll('#seg button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('#seg button').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on'); MET=b.dataset.m; recompute();
+});
+document.getElementById('aiBtn').onclick=()=>document.getElementById('aiModal').classList.add('on');
+document.getElementById('methBtn').onclick=()=>document.getElementById('methModal').classList.add('on');
+document.querySelectorAll('[data-close]').forEach(x=>x.onclick=e=>e.target.closest('.modal').classList.remove('on'));
+document.querySelectorAll('.modal').forEach(mm=>mm.onclick=e=>{if(e.target===mm)mm.classList.remove('on')});
+</script>
+</body>
+</html>

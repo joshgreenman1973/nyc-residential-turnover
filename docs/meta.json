@@ -1,0 +1,115 @@
+{
+  "vintage": "ACS 2020-2024 5-year estimates",
+  "generated_for": "2024",
+  "n_neighborhoods": 197,
+  "city": {
+    "turnover_all": 22.2,
+    "turnover_own": 11.4,
+    "turnover_rent": 27.5,
+    "households": 3334088
+  },
+  "top10": [
+    {
+      "name": "Long Island City-Hunters Point",
+      "boro": "Queens",
+      "v": 51.6
+    },
+    {
+      "name": "Financial District-Battery Park City",
+      "boro": "Manhattan",
+      "v": 46.1
+    },
+    {
+      "name": "Williamsburg",
+      "boro": "Brooklyn",
+      "v": 45.4
+    },
+    {
+      "name": "Downtown Brooklyn-DUMBO-Boerum Hill",
+      "boro": "Brooklyn",
+      "v": 44.1
+    },
+    {
+      "name": "Midtown South-Flatiron-Union Square",
+      "boro": "Manhattan",
+      "v": 41.3
+    },
+    {
+      "name": "Murray Hill-Kips Bay",
+      "boro": "Manhattan",
+      "v": 40.5
+    },
+    {
+      "name": "Greenpoint",
+      "boro": "Brooklyn",
+      "v": 39.4
+    },
+    {
+      "name": "Bushwick (West)",
+      "boro": "Brooklyn",
+      "v": 38.3
+    },
+    {
+      "name": "Midtown-Times Square",
+      "boro": "Manhattan",
+      "v": 37.6
+    },
+    {
+      "name": "Hell's Kitchen",
+      "boro": "Manhattan",
+      "v": 35.7
+    }
+  ],
+  "bottom10": [
+    {
+      "name": "Soundview-Clason Point",
+      "boro": "Bronx",
+      "v": 8.3
+    },
+    {
+      "name": "Flatlands",
+      "boro": "Brooklyn",
+      "v": 8.4
+    },
+    {
+      "name": "Queens Village",
+      "boro": "Queens",
+      "v": 9.9
+    },
+    {
+      "name": "Canarsie",
+      "boro": "Brooklyn",
+      "v": 10.2
+    },
+    {
+      "name": "South Richmond Hill",
+      "boro": "Queens",
+      "v": 10.5
+    },
+    {
+      "name": "Mariner's Harbor-Arlington-Graniteville",
+      "boro": "Staten Island",
+      "v": 10.7
+    },
+    {
+      "name": "Laurelton",
+      "boro": "Queens",
+      "v": 11.0
+    },
+    {
+      "name": "Springfield Gardens (North)-Rochdale Village",
+      "boro": "Queens",
+      "v": 11.1
+    },
+    {
+      "name": "Port Richmond",
+      "boro": "Staten Island",
+      "v": 11.1
+    },
+    {
+      "name": "East New York-New Lots",
+      "boro": "Brooklyn",
+      "v": 11.5
+    }
+  ]
+}

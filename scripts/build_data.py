@@ -201,6 +201,8 @@ def main():
     tot_own_rec = sum(n["own_rec"] for n in ntas.values())
     tot_rent = sum(n["rent"] for n in ntas.values())
     tot_rent_rec = sum(n["rent_rec"] for n in ntas.values())
+    tot_pop1yr = sum(n["pop1yr"] for n in ntas.values())
+    tot_same = sum(n["same_house"] for n in ntas.values())
     vals = [m for m in metrics.values() if m["turnover_all"] is not None]
     top = sorted(vals, key=lambda x: -x["turnover_all"])[:10]
     bot = sorted(vals, key=lambda x: x["turnover_all"])[:10]
@@ -212,6 +214,7 @@ def main():
             "turnover_all": round(100*tot_rec/tot_hh, 1),
             "turnover_own": round(100*tot_own_rec/tot_own, 1),
             "turnover_rent": round(100*tot_rent_rec/tot_rent, 1),
+            "churn_annual": round(100*(tot_pop1yr-tot_same)/tot_pop1yr, 1),
             "households": int(round(tot_hh)),
         },
         "top10": [{"name": t["name"], "boro": t["boro"], "v": t["turnover_all"]} for t in top],

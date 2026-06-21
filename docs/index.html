@@ -73,7 +73,7 @@
   <aside id="panel">
     <div class="eyebrow">New York City &middot; residential turnover</div>
     <h1>Where the city stays put, and where it churns</h1>
-    <p class="lede">The share of households in each neighborhood that moved into their current home recently &mdash; a measure of residential turnover. Pick a measure; darker means more turnover.</p>
+    <p class="lede">How much each neighborhood's residents change over. The first three measures count homes whose householder moved in <b>since 2020</b> &mdash; roughly the last five years. <b>"Past year"</b> switches to a tighter, single-year window. Darker means more turnover.</p>
 
     <div class="seg" id="seg">
       <button data-m="turnover_all" class="on">All households</button>
@@ -141,13 +141,13 @@
 const COLORS=['#f1eef6','#d4b9da','#c994c7','#df65b0','#dd1c77','#980043'];
 const METRICS={
   turnover_all:{label:'All households',top:'Most turnover',bot:'Least turnover',
-    note:'Share of <b>all occupied homes</b> whose householder moved in during 2020 or later (about the last five years).',moe:'moe_all'},
+    note:'<b>Five-year window.</b> Share of <b>all occupied homes</b> whose householder moved in since 2020 &mdash; about the last five years.',moe:'moe_all'},
   turnover_rent:{label:'Renters',top:'Most renter turnover',bot:'Least renter turnover',
-    note:'Share of <b>renter-occupied</b> homes whose householder moved in during 2020 or later. Renters turn over far faster than owners.',moe:'moe_rent'},
+    note:'<b>Five-year window.</b> Share of <b>renter-occupied</b> homes whose householder moved in since 2020. Renters turn over far faster than owners.',moe:'moe_rent'},
   turnover_own:{label:'Owners',top:'Most owner turnover',bot:'Least owner turnover',
-    note:'Share of <b>owner-occupied</b> homes whose householder moved in during 2020 or later. Wider margins of error in small or rental-heavy areas.',moe:'moe_own'},
+    note:'<b>Five-year window.</b> Share of <b>owner-occupied</b> homes whose householder moved in since 2020. Wider margins of error in small or rental-heavy areas.',moe:'moe_own'},
   churn_annual:{label:'Past year',top:'Most annual churn',bot:'Least annual churn',
-    note:'Share of residents who lived in a <b>different home one year earlier</b> &mdash; a measure of year-to-year churn.',moe:'moe_churn'}
+    note:'<b>One-year window.</b> Share of <b>residents</b> who lived in a different home just 12 months earlier. A much tighter snapshot &mdash; not directly comparable to the five-year measures.',moe:'moe_churn'}
 };
 let MET='turnover_all', geo, layer, breaks=[], meta;
 const map=L.map('map',{minZoom:10,maxZoom:16,scrollWheelZoom:true}).setView([40.715,-73.96],11);
@@ -180,11 +180,11 @@ function recompute(){
   document.getElementById('topHd').textContent=m.top;
   document.getElementById('botHd').textContent=m.bot;
   // city stat
-  const ck={turnover_all:'turnover_all',turnover_rent:'turnover_rent',turnover_own:'turnover_own',churn_annual:null}[MET];
-  if(ck&&meta){document.getElementById('cityBig').textContent=meta.city[ck]+'%';
-    document.getElementById('cityLbl').textContent='citywide '+m.label.toLowerCase()+' turnover (moved in 2020 or later)';}
-  else{document.getElementById('cityBig').textContent='—';
-    document.getElementById('cityLbl').textContent='Citywide rate shown for the five-year measures';}
+  const cv=meta?meta.city[MET]:null;
+  document.getElementById('cityBig').textContent=cv!=null?cv+'%':'—';
+  document.getElementById('cityLbl').textContent=(MET==='churn_annual')
+    ? 'citywide share of residents who moved in the past year (one-year window)'
+    : 'citywide '+m.label.toLowerCase()+' turnover (moved in since 2020, five-year window)';
   buildLists();
 }
 function buildLists(){

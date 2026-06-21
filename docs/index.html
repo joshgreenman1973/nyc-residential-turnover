@@ -73,7 +73,7 @@
   <aside id="panel">
     <div class="eyebrow">New York City &middot; residential turnover</div>
     <h1>Where the city stays put, and where it churns</h1>
-    <p class="lede">How much each neighborhood's residents change over. The first three measures count homes whose householder moved in <b>since 2020</b> &mdash; roughly the last five years. <b>"Past year"</b> switches to a tighter, single-year window. Darker means more turnover.</p>
+    <p class="lede">How much each neighborhood's residents change over. The first three measures count homes whose householder moved in during <b>2020 through 2024</b> &mdash; the five years this dataset covers. <b>"Past year"</b> is a tighter measure: residents who lived elsewhere a year before being surveyed, across that same 2020&ndash;2024 period. Darker means more turnover.</p>
 
     <div class="seg" id="seg">
       <button data-m="turnover_all" class="on">All households</button>
@@ -116,7 +116,7 @@
 <div class="modal" id="methModal"><div class="box">
   <button class="x" data-close>&times;</button>
   <h3>Methodology &amp; sources</h3>
-  <p><b>What this measures.</b> Residential turnover is the share of occupied homes whose householder moved in recently. The main view ("All households," "Renters," "Owners") uses Census table <b>B25038, Tenure by Year Householder Moved Into Unit</b>, and counts the share who moved in during 2020 or later &mdash; roughly the most recent five years. The "Past year" view uses table <b>B07003</b> and counts the share of residents who lived in a different home one year earlier (annual churn).</p>
+  <p><b>What this measures.</b> Residential turnover is the share of occupied homes whose householder moved in recently. The main view ("All households," "Renters," "Owners") uses Census table <b>B25038, Tenure by Year Householder Moved Into Unit</b>, and counts the share who moved in during <b>2020 through 2024</b> &mdash; the five calendar years covered by the 2020&ndash;2024 ACS dataset. The "Past year" view uses table <b>B07003</b> and counts residents who lived in a different home one year before they were surveyed; because the ACS pools five years of interviews, this reflects one-year moves spread across the <b>2020&ndash;2024</b> survey period, not a single calendar year.</p>
   <p><b>Geography.</b> Figures are pulled at the census-tract level for the five New York City counties, then summed to the city's 2020 Neighborhood Tabulation Areas (NTAs) using the Department of City Planning tract-to-NTA equivalency. Only residential NTAs are shown; parks, airports, cemeteries and other non-residential areas are excluded. Boundaries are City Planning's shoreline-clipped polygons, so shading stops at the coastline.</p>
   <p><b>Margins of error.</b> American Community Survey figures are estimates from a sample, not a full count. Each neighborhood rate carries a margin of error (shown when you select a neighborhood), computed by combining the published tract margins in quadrature. Smaller neighborhoods and the owner-only and past-year measures have wider margins; treat small differences in the rankings as roughly equal.</p>
   <p><b>What counts as turnover.</b> Turnover here is the share of today's occupied homes filled by a recent arrival. That deliberately includes the first residents of <b>newly built housing</b> &mdash; the source table records only when the current householder moved in, not whether the unit is new or old, and a neighborhood absorbing new residents is in flux either way. A high rate can therefore reflect new construction, a young and mobile renter population, or displacement of prior residents; a low rate reflects long-tenured, often owner-occupied households. This map does not separate those causes, and counting new-construction move-ins is a key reason rapidly built areas such as Long Island City&ndash;Hunters Point top the list.</p>
@@ -141,13 +141,13 @@
 const COLORS=['#f1eef6','#d4b9da','#c994c7','#df65b0','#dd1c77','#980043'];
 const METRICS={
   turnover_all:{label:'All households',top:'Most turnover',bot:'Least turnover',
-    note:'<b>Five-year window.</b> Share of <b>all occupied homes</b> whose householder moved in since 2020 &mdash; about the last five years.',moe:'moe_all'},
+    note:'<b>Five-year window (2020&ndash;2024).</b> Share of <b>all occupied homes</b> whose householder moved in during those five years.',moe:'moe_all'},
   turnover_rent:{label:'Renters',top:'Most renter turnover',bot:'Least renter turnover',
-    note:'<b>Five-year window.</b> Share of <b>renter-occupied</b> homes whose householder moved in since 2020. Renters turn over far faster than owners.',moe:'moe_rent'},
+    note:'<b>Five-year window (2020&ndash;2024).</b> Share of <b>renter-occupied</b> homes whose householder moved in during those years. Renters turn over far faster than owners.',moe:'moe_rent'},
   turnover_own:{label:'Owners',top:'Most owner turnover',bot:'Least owner turnover',
-    note:'<b>Five-year window.</b> Share of <b>owner-occupied</b> homes whose householder moved in since 2020. Wider margins of error in small or rental-heavy areas.',moe:'moe_own'},
+    note:'<b>Five-year window (2020&ndash;2024).</b> Share of <b>owner-occupied</b> homes whose householder moved in during those years. Wider margins of error in small or rental-heavy areas.',moe:'moe_own'},
   churn_annual:{label:'Past year',top:'Most annual churn',bot:'Least annual churn',
-    note:'<b>One-year window.</b> Share of <b>residents</b> who lived in a different home just 12 months earlier. A much tighter snapshot &mdash; not directly comparable to the five-year measures.',moe:'moe_churn'}
+    note:'<b>One-year window.</b> Share of <b>residents</b> who lived in a different home a year before being surveyed (pooled across the 2020&ndash;2024 survey period). A much tighter snapshot &mdash; not directly comparable to the five-year measures.',moe:'moe_churn'}
 };
 let MET='turnover_all', geo, layer, breaks=[], meta;
 const map=L.map('map',{minZoom:10,maxZoom:16,scrollWheelZoom:true}).setView([40.715,-73.96],11);
@@ -183,8 +183,8 @@ function recompute(){
   const cv=meta?meta.city[MET]:null;
   document.getElementById('cityBig').textContent=cv!=null?cv+'%':'—';
   document.getElementById('cityLbl').textContent=(MET==='churn_annual')
-    ? 'citywide share of residents who moved in the past year (one-year window)'
-    : 'citywide '+m.label.toLowerCase()+' turnover (moved in since 2020, five-year window)';
+    ? 'citywide share of residents who moved in the year before being surveyed (2020–2024 survey period)'
+    : 'citywide '+m.label.toLowerCase()+' turnover (householder moved in 2020–2024)';
   buildLists();
 }
 function buildLists(){

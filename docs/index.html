@@ -152,8 +152,8 @@ const METRICS={
 };
 let MET='turnover_all', geo, layer, breaks=[], meta;
 const map=L.map('map',{minZoom:10,maxZoom:16,scrollWheelZoom:true}).setView([40.715,-73.96],11);
-L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png',{attribution:'&copy; OpenStreetMap &copy; CARTO',subdomains:'abcd'}).addTo(map);
-const labels=L.tileLayer('https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png',{subdomains:'abcd',pane:'shadowPane'}).addTo(map);
+L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png?key=cb1_2r82_1_ae4e70b6166057bc41b89638',{attribution:'&copy; OpenStreetMap &copy; CARTO',subdomains:'abcd'}).addTo(map);
+const labels=L.tileLayer('https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png?key=cb1_2r82_1_ae4e70b6166057bc41b89638',{subdomains:'abcd',pane:'shadowPane'}).addTo(map);
 
 function quantiles(vals,n){
   const s=vals.filter(v=>v!=null).sort((a,b)=>a-b),out=[];
